@@ -13,9 +13,7 @@ import (
 	"path"
 	"sort"
 
-	"github.com/hashicorp/go-version"
 	hcl "github.com/hashicorp/hcl/v2"
-	"github.com/terraform-linters/tflint-plugin-sdk/terraform/configs"
 	"github.com/terraform-linters/tflint-plugin-sdk/tflint"
 )
 
@@ -58,31 +56,8 @@ func (rule *TerraformPortefaixStandardStructureRule) Check(runner tflint.Runner)
 	if err := rule.checkDirectories(runner); err != nil {
 		return err
 	}
-	// if err := rule.checkExternalModule(runner); err != nil {
-	// 	return err
-	// }
 
 	return nil
-}
-
-func (rule *TerraformPortefaixStandardStructureRule) checkExternalModule(runner tflint.Runner) error {
-	return runner.WalkModuleCalls(func(call *configs.ModuleCall) error {
-		log.Printf("[DEBUG] Source: %v", call.SourceAddr)
-		if call.SourceAddr != "terraform-google-modules" {
-			return runner.EmitIssue(rule, "unacceptable module source", call.SourceAddrRange)
-		}
-
-		if len(call.Providers) != 0 {
-			return runner.EmitIssue(rule, "must not pass providers", hcl.Range{})
-		}
-
-		expectedVersion, _ := version.NewVersion("0.1.0")
-		if !call.Version.Required.Check(expectedVersion) {
-			return runner.EmitIssue(rule, "must accept version 0.1.0", call.Version.DeclRange)
-		}
-
-		return nil
-	})
 }
 
 func (rule *TerraformPortefaixStandardStructureRule) checkDirectories(runner tflint.Runner) error {
@@ -98,18 +73,6 @@ func (rule *TerraformPortefaixStandardStructureRule) checkDirectories(runner tfl
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
-
-	// allowedFiles := map[string]bool{"providers.tf": true, "main.tf": true}
-
-	// for name := range files {
-	// 	_, filename := path.Split(name)
-	// 	log.Printf("[DEBUG] OK: %s %s %s", name, filename, path.Dir(name))
-	// 	if _, exists := allowedFiles[filename]; !exists {
-	// 		message := fmt.Sprintf("File %s is not allowed here.", filename)
-	// 		return runner.EmitIssue(rule, message, hcl.Range{Start: hcl.InitialPos})
-	// 	}
-	// }
-
 	directory := path.Dir(keys[0])
 
 	backendVarsDir := fmt.Sprintf("%s/%s", directory, backendVarsDirectory)
