@@ -12,33 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: build
+name: Project / Draft PR Labels
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
-  schedule:
-    - cron: "0 0 * * *"
+    types: [opened, ready_for_review]
 
 jobs:
-  test:
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  triage:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2.1.3
+    - name: label swapping
+      uses: jinmayamashita/ready-for-review@1.0.0
       with:
-        go-version: 1.16
-    - name: Run tests
-      run: make test
-    - name: Run build
-      run: make build
+        in-progress-label: 'status/in_progress'
+        ready-for-review-label: 'status/review_needed'
+        repo-token: ${{ secrets.GITHUB_TOKEN }}

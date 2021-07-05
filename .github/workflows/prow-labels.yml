@@ -12,33 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: build
+# name: "Label PRs from globs"
+# on:
+#   schedule:
+#   - cron: "0 * * * *"
+
+# jobs:
+#   execute:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: jpmcb/prow-github-actions@v1.1.1
+#         with:
+#           jobs: 'pr-labeler'
+#           github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+name: Prow / Pull Request Labeler
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  schedule:
-    - cron: "0 0 * * *"
+- pull_request_target
 
 jobs:
-  test:
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  triage:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2.1.3
+    - uses: actions/labeler@v3.0.2
       with:
-        go-version: 1.16
-    - name: Run tests
-      run: make test
-    - name: Run build
-      run: make build
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"

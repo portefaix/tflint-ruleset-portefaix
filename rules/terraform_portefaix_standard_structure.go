@@ -1,9 +1,15 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 package rules
 
 import (
 	"fmt"
 	"log"
+	"os"
 	"path"
+	"sort"
 
 	"github.com/hashicorp/go-version"
 	hcl "github.com/hashicorp/hcl/v2"
@@ -41,12 +47,12 @@ func (rule *TerraformPortefaixStandardStructureRule) Severity() string {
 
 // Link returns the rule reference link
 func (rule *TerraformPortefaixStandardStructureRule) Link() string {
-	return "https://github.com/nlamirault/tflint-ruleset-portefaix/blob/master/README.md"
+	return "https://github.com/portefaix/tflint-ruleset-portefaix/blob/master/README.md"
 }
 
 // Check emits errors for any missing files and any block types that are included in the wrong file
 func (rule *TerraformPortefaixStandardStructureRule) Check(runner tflint.Runner) error {
-	log.Printf("[ERR] Check `%s` rule for runner", rule.Name())
+	log.Printf("[DEBUG] Check `%s` rule for runner", rule.Name())
 	if err := rule.checkDirectories(runner); err != nil {
 		return err
 	}
@@ -59,7 +65,7 @@ func (rule *TerraformPortefaixStandardStructureRule) Check(runner tflint.Runner)
 
 func (rule *TerraformPortefaixStandardStructureRule) checkExternalModule(runner tflint.Runner) error {
 	return runner.WalkModuleCalls(func(call *configs.ModuleCall) error {
-		log.Printf("[INFO] Source: %v", call.SourceAddr)
+		log.Printf("[DEBUG] Source: %v", call.SourceAddr)
 		if call.SourceAddr != "terraform-google-modules" {
 			return runner.EmitIssue(rule, "unacceptable module source", call.SourceAddrRange)
 		}
@@ -79,48 +85,41 @@ func (rule *TerraformPortefaixStandardStructureRule) checkExternalModule(runner 
 
 func (rule *TerraformPortefaixStandardStructureRule) checkDirectories(runner tflint.Runner) error {
 	files, _ := runner.Files()
-	log.Printf("[INFO] Files: %d", len(files))
-	allowedFiles := map[string]bool{"providers.tf": true, "main.tf": true}
+	log.Printf("[DEBUG] Files: %d", len(files))
 
-	for name := range files {
-		_, filename := path.Split(name)
-		log.Printf("[INFO] OK: %s %s", name, filename)
-		if _, exists := allowedFiles[filename]; !exists {
-			message := fmt.Sprintf("File %s is not allowed here.", filename)
-
-			return runner.EmitIssue(rule, message, hcl.Range{Start: hcl.InitialPos})
-		}
+	if len(files) == 0 {
+		return nil
 	}
 
-	// f := runner.Files()
-	// directories := make(map[string]*hcl.File, len(f))
-	// for name, file := range f {
-	// 	directories[filepath.Base(name)] = file
+	keys := make([]string, 0, len(files))
+	for k := range files {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// allowedFiles := map[string]bool{"providers.tf": true, "main.tf": true}
+
+	// for name := range files {
+	// 	_, filename := path.Split(name)
+	// 	log.Printf("[DEBUG] OK: %s %s %s", name, filename, path.Dir(name))
+	// 	if _, exists := allowedFiles[filename]; !exists {
+	// 		message := fmt.Sprintf("File %s is not allowed here.", filename)
+	// 		return runner.EmitIssue(rule, message, hcl.Range{Start: hcl.InitialPos})
+	// 	}
 	// }
 
-	// log.Printf("[DEBUG] %d directories found: %v", len(directories), directories)
+	directory := path.Dir(keys[0])
 
-	// if directories[backendVarsDirectory] == nil {
-	// 	runner.EmitIssue(
-	// 		r,
-	// 		fmt.Sprintf("Structure should include a %s directory for the backend configuration", backendVarsDirectory),
-	// 		hcl.Range{
-	// 			Filename: filepath.Join(config.Module.SourceDir, backendVarsDirectory),
-	// 			Start:    hcl.InitialPos,
-	// 		},
-	// 	)
-	// }
-
-	// if directories[tfVarsDirectory] == nil {
-	// 	runner.EmitIssue(
-	// 		r,
-	// 		fmt.Sprintf("Structure should include a %s directory for the configuration", tfVarsDirectory),
-	// 		hcl.Range{
-	// 			Filename: filepath.Join(config.Module.SourceDir, tfVarsDirectory),
-	// 			Start:    hcl.InitialPos,
-	// 		},
-	// 	)
-	// }
+	backendVarsDir := fmt.Sprintf("%s/%s", directory, backendVarsDirectory)
+	if _, err := os.Stat(backendVarsDir); os.IsNotExist(err) {
+		message := fmt.Sprintf("Module must include a %s directory as the directory for backend configuration.", backendVarsDir)
+		return runner.EmitIssue(rule, message, hcl.Range{Start: hcl.InitialPos})
+	}
+	tfVarsDir := fmt.Sprintf("%s/%s", directory, tfVarsDirectory)
+	if _, err := os.Stat(tfVarsDir); os.IsNotExist(err) {
+		message := fmt.Sprintf("Module must include a %s directory as the directory for module configuration.", tfVarsDir)
+		return runner.EmitIssue(rule, message, hcl.Range{Start: hcl.InitialPos})
+	}
 
 	return nil
 }

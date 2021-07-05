@@ -12,33 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: build
-
+name: Prow / Github Actions
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  schedule:
-    - cron: "0 0 * * *"
+  issue_comment:
+    types: [created]
 
 jobs:
-  test:
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  execute:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Set up Go
-      uses: actions/setup-go@v2.1.3
-      with:
-        go-version: 1.16
-    - name: Run tests
-      run: make test
-    - name: Run build
-      run: make build
+      - uses: jpmcb/prow-github-actions@v1.1.3
+        with:
+          prow-commands: '/assign
+            /unassign
+            /approve
+            /retitle
+            /area
+            /kind
+            /priority
+            /status
+            /remove
+            /lgtm
+            /close
+            /reopen
+            /lock
+            /milestone
+            /hold
+            /cc
+            /uncc'
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
