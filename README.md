@@ -22,7 +22,7 @@ plugin "portefaix" {
 
 |Name|Description|Severity|Enabled|Link|
 | --- | --- | --- | --- | --- |
-|terraform_portefaix_standard_structure|Check module respect Skale-5 directories recommendations|ERROR|✔||
+|terraform_portefaix_standard_structure|Check module respect Portefaix directories recommendations|ERROR|✔||
 |terraform_portefaix_standard_files|Check module respect Portefaix files recommendations|ERROR|✔||
 |terraform_portefaix_tfenv|Check module use a file for Tfenv|ERROR|✔||
 
