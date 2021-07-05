@@ -21,6 +21,7 @@ func main() {
 			Rules: []tflint.Rule{
 				rules.NewTerraformPortefaixStandardStructureRule(),
 				rules.NewTerraformPortefaixStandardFilesRule(),
+				rules.NewTerraformPortefaixTfenvRule(),
 			},
 		},
 	})

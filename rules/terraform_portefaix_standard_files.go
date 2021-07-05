@@ -17,6 +17,7 @@ import (
 
 const (
 	filenameProvider = "provider.tf"
+	filenameBackend = "backend.tf"
 )
 
 // TerraformPortefaixStandardFilesRule checks whether modules adhere to Terraform Portefaix standard component structure
@@ -50,26 +51,28 @@ func (rule *TerraformPortefaixStandardFilesRule) Link() string {
 // Check emits errors for any missing files and any block types that are included in the wrong file
 func (rule *TerraformPortefaixStandardFilesRule) Check(runner tflint.Runner) error {
 	log.Printf("[DEBUG] Check `%s` rule for runner", rule.Name())
-	if err := rule.checkProviderFile(runner); err != nil {
+	if err := rule.checkMandatoryFile(
+		runner, filenameProvider, fmt.Sprintf(
+			"Module must include a %s file as the provider configuration.", filenameProvider)); err != nil {
 		return err
 	}
-
+	if err := rule.checkMandatoryFile(
+		runner, filenameBackend, fmt.Sprintf(
+			"Module must include a %s file as the backend configuration.", filenameBackend)); err != nil {
+		return err
+	}
 	return nil
 }
 
-func (rule *TerraformPortefaixStandardFilesRule) checkProviderFile(runner tflint.Runner) error {
+func (rule *TerraformPortefaixStandardFilesRule) checkMandatoryFile(runner tflint.Runner, mandatory string, message string) error {
 	files, _ := runner.Files()
 	log.Printf("[DEBUG] Files: %d", len(files))
 
-	// allowedFiles := map[string]bool{"providers.tf": true, "main.tf": true}
-
 	for name := range files {
 		_, filename := path.Split(name)
-		log.Printf("[DEBUG] OK: %s %s %s", name, filename, path.Dir(name))
-		if filename == filenameProvider {
+		if filename == mandatory {
 			return nil
 		}
 	}
-	message := fmt.Sprintf("Module must include a %s file as the provider configuration.", filenameProvider)
 	return runner.EmitIssue(rule, message, hcl.Range{Start: hcl.InitialPos})
 }
