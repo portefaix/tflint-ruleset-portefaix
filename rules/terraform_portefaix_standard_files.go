@@ -17,11 +17,13 @@ import (
 
 const (
 	filenameProvider = "provider.tf"
-	filenameBackend = "backend.tf"
+	filenameBackend  = "backend.tf"
 )
 
 // TerraformPortefaixStandardFilesRule checks whether modules adhere to Terraform Portefaix standard component structure
-type TerraformPortefaixStandardFilesRule struct{}
+type TerraformPortefaixStandardFilesRule struct {
+	tflint.DefaultRule
+}
 
 // NewTerraformPortefaixStandardFilesRule returns a new rule
 func NewTerraformPortefaixStandardFilesRule() *TerraformPortefaixStandardFilesRule {
@@ -39,7 +41,7 @@ func (rule *TerraformPortefaixStandardFilesRule) Enabled() bool {
 }
 
 // Severity returns the rule severity
-func (rule *TerraformPortefaixStandardFilesRule) Severity() string {
+func (rule *TerraformPortefaixStandardFilesRule) Severity() tflint.Severity {
 	return tflint.ERROR
 }
 
@@ -65,7 +67,7 @@ func (rule *TerraformPortefaixStandardFilesRule) Check(runner tflint.Runner) err
 }
 
 func (rule *TerraformPortefaixStandardFilesRule) checkMandatoryFile(runner tflint.Runner, mandatory string, message string) error {
-	files, _ := runner.Files()
+	files, _ := runner.GetFiles()
 	log.Printf("[DEBUG] Files: %d", len(files))
 
 	for name := range files {
