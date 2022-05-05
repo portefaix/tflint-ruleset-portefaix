@@ -23,7 +23,9 @@ const (
 )
 
 // TerraformPortefaixStandardStructureRule checks whether modules adhere to Terraform Portefaix standard component structure
-type TerraformPortefaixStandardStructureRule struct{}
+type TerraformPortefaixStandardStructureRule struct {
+	tflint.DefaultRule
+}
 
 // NewTerraformPortefaixStandardStructureRule returns a new rule
 func NewTerraformPortefaixStandardStructureRule() *TerraformPortefaixStandardStructureRule {
@@ -41,7 +43,7 @@ func (rule *TerraformPortefaixStandardStructureRule) Enabled() bool {
 }
 
 // Severity returns the rule severity
-func (rule *TerraformPortefaixStandardStructureRule) Severity() string {
+func (rule *TerraformPortefaixStandardStructureRule) Severity() tflint.Severity {
 	return tflint.ERROR
 }
 
@@ -61,7 +63,7 @@ func (rule *TerraformPortefaixStandardStructureRule) Check(runner tflint.Runner)
 }
 
 func (rule *TerraformPortefaixStandardStructureRule) checkDirectories(runner tflint.Runner) error {
-	files, _ := runner.Files()
+	files, _ := runner.GetFiles()
 	log.Printf("[DEBUG] Files: %d", len(files))
 
 	if len(files) == 0 {

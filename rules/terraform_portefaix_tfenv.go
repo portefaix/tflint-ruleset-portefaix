@@ -22,7 +22,9 @@ const (
 )
 
 // TerraformPortefaixTfenvRule checks whether modules adhere to Terraform Portefaix standard component structure
-type TerraformPortefaixTfenvRule struct{}
+type TerraformPortefaixTfenvRule struct {
+	tflint.DefaultRule
+}
 
 // NewTerraformPortefaixTfenvRule returns a new rule
 func NewTerraformPortefaixTfenvRule() *TerraformPortefaixTfenvRule {
@@ -40,7 +42,7 @@ func (rule *TerraformPortefaixTfenvRule) Enabled() bool {
 }
 
 // Severity returns the rule severity
-func (rule *TerraformPortefaixTfenvRule) Severity() string {
+func (rule *TerraformPortefaixTfenvRule) Severity() tflint.Severity {
 	return tflint.ERROR
 }
 
@@ -60,7 +62,7 @@ func (rule *TerraformPortefaixTfenvRule) Check(runner tflint.Runner) error {
 }
 
 func (rule *TerraformPortefaixTfenvRule) checkTerraformVersionFile(runner tflint.Runner) error {
-	files, _ := runner.Files()
+	files, _ := runner.GetFiles()
 	log.Printf("[DEBUG] Files: %d", len(files))
 
 	if len(files) == 0 {
