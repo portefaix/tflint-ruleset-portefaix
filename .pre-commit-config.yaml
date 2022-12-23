@@ -1,8 +1,10 @@
-# Copyright (C) 2021 Nicolas Lamirault <nicolas.lamirault@gmail.com>
+# Copyright (C) Nicolas Lamirault <nicolas.lamirault@gmail.com>
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# SPDX-License-Identifier: MPL-2.0
 
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
@@ -18,22 +20,24 @@ repos:
         exclude: mkdocs.yml
     -   id: check-added-large-files
 -   repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.1.10
+    rev: v1.3.1
     hooks:
     -   id: insert-license
         files: \.go
         args:
         - --license-filepath
-        - hack/config/license.txt
+        - LICENSE
         - --comment-style
         - //
+        # - --remove-header
     -   id: insert-license
-        files: Makefile
+        files: (Makefile|\.mk|\.yaml|\.yml|\.toml|\.sh)
         args:
         - --license-filepath
-        - hack/config/license.txt
-- repo: git://github.com/dnephin/pre-commit-golang
-  rev: master
+        - LICENSE
+        # - --remove-header
+- repo: https://github.com/dnephin/pre-commit-golang
+  rev: v0.5.1
   hooks:
     - id: go-fmt
     - id: go-vet
