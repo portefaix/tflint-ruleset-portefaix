@@ -2,7 +2,7 @@ module github.com/portefaix/tflint-ruleset-portefaix
 
 go 1.23
 
-toolchain go1.24.1
+toolchain go1.27.1
 
 require (
 	github.com/hashicorp/hcl/v2 v2.23.0
